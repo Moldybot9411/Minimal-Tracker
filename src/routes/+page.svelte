@@ -5,7 +5,7 @@
     import Card from "$lib/Components/Card.svelte";
     import Dialog from "$lib/Components/Dialog.svelte";
     import { onMount } from "svelte";
-    import { getAllTrackers, addTracker, updateProgress, completeTracker, deleteTracker, reopenTracker } from "$lib/appdata";
+    import { TrackerService } from "$lib/trackerService";
     import type { InsertTracker, SelectTracker } from "$lib/db/schema";
     import Button from "$lib/Components/Button.svelte";
     import Switch from "$lib/Components/Switch.svelte";
@@ -21,9 +21,7 @@
 
     let loading: boolean = $state(false);
 
-    let newTrackerDialogVisible = $state(false);
-    let settingsDialogVisible = $state(false);
-    let discardDialogVisible = $state(false);
+    let activeDialog: 'new' | 'settings' | 'discard' | null = $state(null);
 
     let itemToDelete: SelectTracker | undefined = $state(undefined);
 
@@ -34,69 +32,45 @@
     async function refreshTrackers() {
         loading = true;
 
-        trackers = await getAllTrackers();
+        trackers = await TrackerService.list();
 
         loading = false;
     }
 
-    async function add_tracker(name: string, amount: number | undefined) {
-        if (!name) return;
+    async function createTracker(name: string, amount?: number) {
+        if (!name.trim()) return;
 
-        let new_tracker: InsertTracker = {
-            id: undefined,
-            name: name,
-            amount: amount ?? 1,
-            progress: 0,
-            completed: false,
-            completedAt: null
-        };
+        TrackerService.add(name, amount);
 
-        await addTracker(new_tracker)
         await refreshTrackers();
 
         new_tracker_name = "";
         new_amount = undefined;
     }
 
-    function add_progress(tracker: SelectTracker) {
-        if (tracker.progress < tracker.amount) {
-            tracker.progress += 1
-
-            updateProgress(tracker.id, tracker.progress)
-        }
-
-        if (tracker.progress == tracker.amount) {
-            completeTracker(tracker.id);
-            complete_tracker(tracker);
-        }
+    function incrementTracker(tracker: SelectTracker) {
+        tracker.progress += 1;
+        TrackerService.increment(tracker);
     }
 
-    function complete_tracker(tracker: SelectTracker) {
-        tracker.completed = true;
-        trackers = [...trackers]
+    function decrementTracker(tracker: SelectTracker) {
+        tracker.progress -= 1;
+        TrackerService.decrement(tracker);
     }
 
-    function remove_progress(tracker: SelectTracker) {
-        if (tracker.progress > 0) {
-            tracker.progress -= 1
-            updateProgress(tracker.id, tracker.progress)
-        }
-    }
-
-    function delete_tracker(tracker: SelectTracker) {
+    function removeTracker(tracker: SelectTracker) {
         const index = trackers.indexOf(tracker, 0);
         if (index > -1) {
-            trackers.splice(index, 1);
-            trackers = [...trackers]
-            deleteTracker(tracker.id);
+            trackers = trackers.filter(t => t.id !== tracker.id);
+            TrackerService.remove(tracker.id);
         }
     }
 
-    function reopen_tracker(tracker: SelectTracker) {
+    function reopenTracker(tracker: SelectTracker) {
         tracker.progress = 0;
         tracker.completed = false;
 
-        reopenTracker(tracker.id);
+        TrackerService.reopen(tracker.id);
 
         trackers = [...trackers]
     }
@@ -107,11 +81,11 @@
         class="w-full"
         icon={BadgePlus}
         label="Add Tracker"
-        onclick={() => newTrackerDialogVisible = true} />
+        onclick={() => activeDialog = "new"} />
     <Button
         variant="secondary"
         icon={Settings}
-        onclick={() => settingsDialogVisible = true} />
+        onclick={() => activeDialog = "settings"} />
 </Card>
 
 <Card
@@ -128,19 +102,19 @@
             <div class="flex gap-1">
                 <Button
                     variant="accept"
-                    onclick={() => add_progress(tracker)}
+                    onclick={() => incrementTracker(tracker)}
                     class="!p-1"
                     icon={Check} />
                 <Button
                     variant="warning"
-                    onclick={() => remove_progress(tracker)}
+                    onclick={() => decrementTracker(tracker)}
                     class="!p-1"
                     icon={Minus} />
                 <Button
                     variant="danger"
                     onclick={() => {
                         itemToDelete = tracker;
-                        discardDialogVisible = true;
+                        activeDialog = "discard";
                     }}
                     class="!p-1"
                     icon={Trash2} />
@@ -163,14 +137,14 @@
             <div class="flex gap-1">
                 <Button
                     class="!p-1"
-                    onclick={() => reopen_tracker(tracker)}
+                    onclick={() => reopenTracker(tracker)}
                     variant="accept"
                     icon={RotateCcw} />
                 <Button
                     class="!p-1"
                     onclick={() => {
                         itemToDelete = tracker;
-                        discardDialogVisible = true;
+                        activeDialog = "discard";
                     }}
                     variant="danger"
                     icon={Trash2} />
@@ -181,7 +155,7 @@
 
 <Dialog
     label="New Tracker"
-    bind:visible={newTrackerDialogVisible}
+    visible={activeDialog === "new"}
     bind:loading={loading} >
     <div class="p-2 flex flex-col gap-2">
         <div class="flex flex-col">
@@ -199,9 +173,9 @@
         <Button
             onclick={() => {
                 loading = true;
-                add_tracker(new_tracker_name, new_amount)
+                createTracker(new_tracker_name, new_amount)
                     .then(() => {
-                        newTrackerDialogVisible = false;
+                        activeDialog = null;
                     }
                 );
             }}
@@ -212,7 +186,7 @@
     </div>
 </Dialog>
 
-<Dialog label="Settings" bind:visible={settingsDialogVisible}>
+<Dialog label="Settings" visible={activeDialog === "settings"}>
 
     <Switch
         class="font-bold"
@@ -229,22 +203,22 @@
         label="Save & Quit" />
 </Dialog>
 
-<Dialog label="Delete Tracker" bind:visible={discardDialogVisible}>
+<Dialog label="Delete Tracker" visible={activeDialog === "discard"}>
     <div class="flex gap-2">
         <Button
             variant="secondary"
             class="w-full"
             label="Cancel"
-            onclick={() => discardDialogVisible = false} />
+            onclick={() => activeDialog = null} />
         <Button
             class="w-full"
             label="Delete"
             icon={Trash2}
             onclick={() => {
                 if (itemToDelete) {
-                    delete_tracker(itemToDelete);
+                    removeTracker(itemToDelete);
                 }
-                discardDialogVisible = false;
+                activeDialog = null;
             }} />
     </div>
 </Dialog>

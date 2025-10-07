@@ -2,7 +2,7 @@ import { db } from '$lib/db/database';
 import * as schema from '$lib/db/schema'
 import { eq } from 'drizzle-orm/sqlite-core/expressions';
 
-export async function getAllTrackers(): Promise<schema.SelectTracker[]> {
+export async function dbGetAllTrackers(): Promise<schema.SelectTracker[]> {
     let trackers: schema.SelectTracker[] = [];
 
     await db.query.trackers
@@ -15,30 +15,30 @@ export async function getAllTrackers(): Promise<schema.SelectTracker[]> {
     return trackers;
 }
 
-export async function addTracker(tracker: schema.InsertTracker) {
+export async function dbAddTracker(tracker: schema.InsertTracker) {
     await db.insert(schema.trackers)
         .values(tracker);
 }
 
-export async function updateProgress(id: number, progress: number) {
+export async function dbUpdateTrackerProgress(id: number, progress: number) {
     await db.update(schema.trackers)
         .set({ progress: progress })
         .where(eq(schema.trackers.id, id));
 }
 
-export async function completeTracker(id: number) {
+export async function dbCompleteTracker(id: number) {
     await db.update(schema.trackers)
         .set({ completed: true })
         .where(eq(schema.trackers.id, id))
 }
 
-export async function reopenTracker(id: number) {
+export async function dbReopenTracker(id: number) {
     await db.update(schema.trackers)
         .set({ completed: false, progress: 0 })
         .where(eq(schema.trackers.id, id));
 }
 
-export async function deleteTracker(id: number) {
+export async function dbDeleteTracker(id: number) {
     await db.delete(schema.trackers)
         .where(eq(schema.trackers.id, id))
 }

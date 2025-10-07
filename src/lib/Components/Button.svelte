@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
-    import { type Icon as IconType } from '@lucide/svelte';
-  import type { HTMLButtonAttributes } from "svelte/elements";
+    import { type Icon as IconType } from "@lucide/svelte";
+    import type { HTMLButtonAttributes } from "svelte/elements";
 
     interface Props extends HTMLButtonAttributes {
         children?: Snippet;
@@ -28,9 +28,9 @@
         variant === "secondary" && "bg-gray-300 hover:bg-gray-400",
         variant === "accept" && "bg-lime-400 hover:bg-lime-500",
         variant === "warning" && "bg-yellow-500 hover:bg-yellow-600",
-        variant === "danger" && "bg-red-500 hover:bg-red-600"
+        variant === "danger" && "bg-red-500 hover:bg-red-600",
     ]}
-    {...others} >
+    {...others}>
     {#if icon}
         {@const Icon = icon}
         <Icon />
