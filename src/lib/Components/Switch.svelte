@@ -17,7 +17,7 @@
     }: Props = $props();
 </script>
 
-<div class="flex items-center gap-2 {classes}">
+<div class="flex gap-2 {classes}">
     <label for={name} class="relative cursor-pointer">
         <input
             bind:checked
@@ -30,7 +30,7 @@
     </label>
 
     {#if label}
-        <p>{label}</p>
+        <p class="wrap-anywhere">{label}</p>
     {/if}
 </div>
 
@@ -72,6 +72,11 @@
 
     .toggle-input:checked + .switch {
         background-color: var(--color-indigo-400);
+    }
+
+    .toggle-input:checked + .switch,
+    .dark {
+        background-color: var(--color-blue-500);
     }
 
     .toggle-input:checked + .switch::before {

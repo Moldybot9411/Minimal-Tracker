@@ -1,8 +1,8 @@
 use chrono::Timelike;
-use std::time::Duration;
-use tokio::time::sleep;
-use tauri::{AppHandle, Emitter};
 use serde_json::json;
+use std::time::Duration;
+use tauri::{AppHandle, Emitter};
+use tokio::time::sleep;
 
 pub async fn init(app: AppHandle) {
     tokio::spawn(async move {
@@ -21,7 +21,6 @@ pub async fn init(app: AppHandle) {
                 .unwrap();
 
             let dur: Duration = (next_day - now).to_std().unwrap();
-            println!("{:?}", dur);
             sleep(dur).await;
         }
     });

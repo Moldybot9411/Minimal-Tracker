@@ -1,7 +1,7 @@
-use tauri::{AppHandle, Emitter, Manager, State};
-use tauri_plugin_store::StoreExt;
 use serde_json::{json, Value};
 use std::sync::Mutex;
+use tauri::{AppHandle, Emitter, Manager, State};
+use tauri_plugin_store::StoreExt;
 
 use crate::{AppData, Settings};
 
@@ -11,10 +11,10 @@ pub fn init(app: AppHandle, state: State<'_, Mutex<AppData>>) {
 
     for (field_name, field_value) in &state.user_settings {
         match store.get(field_name.to_string()) {
-            Some(val) => println!("{}", val),
+            Some(_) => {},
             None => {
                 store.set(field_name.to_string(), json!(field_value));
-            },
+            }
         }
     }
 }
@@ -37,7 +37,9 @@ pub fn set_autostart(app: AppHandle, state: State<'_, Mutex<AppData>>, value: bo
     let store = app.app_handle().store("usersettings.json").unwrap();
     let mut state = state.lock().unwrap();
 
-    state.user_settings.insert(Settings::Autostart, json!(value));
+    state
+        .user_settings
+        .insert(Settings::Autostart, json!(value));
 
     store.set(Settings::Autostart.to_string(), value);
     app.emit("settings_changed", json!(null)).unwrap();
@@ -48,8 +50,23 @@ pub fn set_reminders(app: AppHandle, state: State<'_, Mutex<AppData>>, value: bo
     let store = app.app_handle().store("usersettings.json").unwrap();
     let mut state = state.lock().unwrap();
 
-    state.user_settings.insert(Settings::Reminders, json!(value));
+    state
+        .user_settings
+        .insert(Settings::Reminders, json!(value));
 
     store.set(Settings::Reminders.to_string(), value);
+    app.emit("settings_changed", json!(null)).unwrap();
+}
+
+#[tauri::command]
+pub fn set_ram_saver(app: AppHandle, state: State<'_, Mutex<AppData>>, value: bool) {
+    let store = app.app_handle().store("usersettings.json").unwrap();
+    let mut state = state.lock().unwrap();
+
+    state
+        .user_settings
+        .insert(Settings::RamSaver, json!(value));
+
+    store.set(Settings::RamSaver.to_string(), value);
     app.emit("settings_changed", json!(null)).unwrap();
 }

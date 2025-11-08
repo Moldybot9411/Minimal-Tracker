@@ -4,12 +4,14 @@ mod services {
     pub mod notification_service;
     pub mod refresh_dailies_service;
     pub mod settings_service;
+    pub mod tray_service;
 }
 use core::fmt;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use services::{
     autostart_service, notification_service, refresh_dailies_service, settings_service,
+    tray_service,
 };
 use std::sync::Mutex;
 use std::{collections::HashMap, sync::Arc};
@@ -19,6 +21,7 @@ use tauri::{Listener, Manager};
 enum Settings {
     Autostart,
     Reminders,
+    RamSaver,
 }
 
 impl fmt::Display for Settings {
@@ -26,6 +29,7 @@ impl fmt::Display for Settings {
         match self {
             Settings::Autostart => write!(f, "autostart"),
             Settings::Reminders => write!(f, "reminders"),
+            Settings::RamSaver => write!(f, "ramsaver"),
         }
     }
 }
@@ -39,6 +43,7 @@ impl Default for AppData {
         let mut settings: HashMap<Settings, serde_json::Value> = HashMap::new();
         settings.insert(Settings::Autostart, json!(true));
         settings.insert(Settings::Reminders, json!(true));
+        settings.insert(Settings::RamSaver, json!(false));
 
         Self {
             user_settings: settings,
@@ -49,6 +54,7 @@ impl Default for AppData {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_autostart::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
@@ -69,6 +75,9 @@ pub fn run() {
             app.manage(Mutex::new(AppData::default()));
 
             let handle = app.handle();
+
+            // Start System Tray
+            tray_service::init(handle.clone());
 
             // Start User Settings Service
             settings_service::init(handle.clone(), handle.state());
@@ -99,8 +108,17 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             services::settings_service::get_settings,
             services::settings_service::set_autostart,
-            services::settings_service::set_reminders
+            services::settings_service::set_reminders,
+            services::settings_service::set_ram_saver
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|_app_handle, event| match event {
+            tauri::RunEvent::ExitRequested { api, code, .. } => {
+                if code.is_none() {
+                    api.prevent_exit();
+                }
+            }
+            _ => {}
+        });
 }

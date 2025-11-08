@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
+		"host": "vite dev --host",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
@@ -13,7 +14,7 @@
 		"tauri": "tauri"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^6.0.0",
+		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"@tauri-apps/cli": "^2.8.4",
@@ -28,6 +29,7 @@
 		"@tailwindcss/vite": "^4.1.13",
 		"@tauri-apps/plugin-autostart": "^2.5.0",
 		"@tauri-apps/plugin-notification": "^2.3.1",
+		"@tauri-apps/plugin-positioner": "^2.3.0",
 		"@tauri-apps/plugin-sql": "^2.3.0",
 		"@tauri-apps/plugin-store": "^2.4.0",
 		"drizzle-orm": "^0.44.5",

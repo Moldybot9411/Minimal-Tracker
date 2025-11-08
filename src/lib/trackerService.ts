@@ -27,7 +27,8 @@ export const TrackerService = {
 
         const new_tracker = await dbAddTracker(tracker);
         trackers.update((current) => {
-            return [...current, new_tracker];
+            current.push(new_tracker);
+            return current;
         });
     },
 

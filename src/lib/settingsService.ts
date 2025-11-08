@@ -4,6 +4,7 @@ import { writable } from "svelte/store";
 export enum Settings {
     autostart = "autostart",
     reminders = "reminders",
+    ramsaver = "ramsaver",
 }
 
 export type SettingsObject = {
@@ -33,6 +34,15 @@ export const SettingsService = {
         });
 
         await invoke("set_reminders", { value: value });
+    },
+
+    async setRamSaver(value: boolean): Promise<void> {
+        settings.update((current) => {
+            current[Settings.ramsaver] = value;
+            return current;
+        });
+
+        await invoke("set_ram_saver", { value: value });
     },
 };
 

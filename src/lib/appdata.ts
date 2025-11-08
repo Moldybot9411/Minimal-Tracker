@@ -25,9 +25,9 @@ export async function dbAddTracker(
         .get();
 
     const ret: schema.SelectTracker = {
+        ...(tracker as schema.SelectTracker),
         //@ts-ignore
         id: res.id["result"]["lastInsertId"],
-        ...(tracker as schema.SelectTracker),
     };
 
     return ret;

@@ -1,17 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 * {
     box-sizing: border-box;
 }
 
-
-
 body {
     font-family: "Nunito", "Arial", sans-serif;
-}
-
-hr {
-    border: 0.0625rem solid var(--color-gray-400);
 }
 
 :root::-webkit-scrollbar {

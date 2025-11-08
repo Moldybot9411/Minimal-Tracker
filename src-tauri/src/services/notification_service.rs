@@ -1,8 +1,8 @@
 use chrono::Timelike;
 use std::time::Duration;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_notification::NotificationExt;
 use tokio::time::sleep;
-use tauri::{AppHandle, Manager};
 
 use crate::Settings;
 
@@ -23,13 +23,16 @@ pub async fn init(app: AppHandle) {
             let dur: Duration = (next_hour - now).to_std().unwrap();
             sleep(dur).await;
 
-            let enabled = &settings_service::get_settings(app.state())[&Settings::Reminders.to_string()];
-            if enabled.is_boolean() && enabled == false { continue };
+            let enabled =
+                &settings_service::get_settings(app.state())[&Settings::Reminders.to_string()];
+            if enabled.is_boolean() && enabled == false {
+                continue;
+            };
 
             app.notification()
                 .builder()
                 .title("Reminder")
-                .body("You still have tasks to do!")
+                .body("Did you finish all of your tasks today?")
                 .show()
                 .unwrap();
         }

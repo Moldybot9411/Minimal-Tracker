@@ -12,7 +12,6 @@ pub fn init(app: Arc<AppHandle>) {
         Some(vec![]),
     ));
 
-    println!("Updating autostart");
     let enabled = &get_settings(app.state())[&Settings::Autostart.to_string()];
 
     let autostart_manager = app.autolaunch();
