@@ -1,38 +1,24 @@
-# sv
+# Minimal Tray Tasker
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Track your everyday tasks right from your system tray
 
-## Creating a project
+## Install
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
+Head to the releases page and download the right package for your system.
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+Install Node dependencies
+```
+npm i
 ```
 
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
+Run the project
+```
+npm run tauri dev
 ```
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Build the project
+```
+npm run tauri build
+```
